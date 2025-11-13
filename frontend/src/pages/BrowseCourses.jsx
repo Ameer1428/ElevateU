@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth, useUser } from '@clerk/clerk-react'
-import axios from 'axios'
+import api from '../services/api'
 import './BrowseCourses.css'
 
 function BrowseCourses() {
@@ -19,7 +19,7 @@ function BrowseCourses() {
 
   const fetchCourses = async () => {
     try {
-      const response = await axios.get('/api/courses')
+      const response = await api.get('/api/courses')
       setCourses(response.data)
     } catch (error) {
       console.error('Error fetching courses:', error)
@@ -31,7 +31,7 @@ function BrowseCourses() {
   const fetchEnrollments = async () => {
     if (!userId) return
     try {
-      const response = await axios.get(`/api/enrollments/user/${userId}`)
+      const response = await api.get(`/api/enrollments/user/${userId}`)
       setEnrollments(response.data.map(e => e.courseId))
     } catch (error) {
       console.error('Error fetching enrollments:', error)
@@ -45,7 +45,7 @@ function BrowseCourses() {
     }
 
     try {
-      await axios.post('/api/enrollments', {
+      await api.post('/api/enrollments', {
         userId: userId,
         courseId: courseId
       })
@@ -148,4 +148,3 @@ function BrowseCourses() {
 }
 
 export default BrowseCourses
-
