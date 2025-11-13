@@ -110,7 +110,6 @@ function CourseDetails() {
       <header className="dashboard-header">
         <div className="header-left">
           <div className="logo" onClick={handleBack} style={{ cursor: 'pointer' }}>
-            <div className="logo-icon">📚</div>
             <span className="logo-text">ElevateU</span>
           </div>
         </div>

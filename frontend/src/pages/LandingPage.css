@@ -64,14 +64,16 @@
 }
 
 .gradient-purple-blue {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  font-family:'Times New Roman', Times, serif;
+  background: linear-gradient(135deg, #000000 0%, #000000 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .gradient-pink-purple {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  font-family:'Times New Roman', Times, serif;
+  background: linear-gradient(135deg, #000000 0%, #000000 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

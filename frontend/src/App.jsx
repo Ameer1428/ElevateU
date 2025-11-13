@@ -9,7 +9,8 @@ import StudentDetails from './pages/StudentDetails'
 import ProtectedRoute from './components/ProtectedRoute'
 import ChatBot from './components/ChatBot'
 import AuthLayout from './components/AuthLayout'
-
+import Signup from './pages/Signup'
+import Login from './pages/Login'
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || ''
 
 function App() {
@@ -28,21 +29,31 @@ function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route 
-            path="/sign-in/*" 
-            element={
-              <AuthLayout title="Sign In">
-                <SignIn routing="path" path="/sign-in" />
-              </AuthLayout>
-            } 
-          />
-          <Route 
-            path="/sign-up/*" 
-            element={
-              <AuthLayout title="Sign Up">
-                <SignUp routing="path" path="/sign-up" />
-              </AuthLayout>
-            } 
-          />
+  path="/login/*" 
+  element={
+    <AuthLayout>
+      <SignIn 
+        routing="path" 
+        path="/login"
+        forceRedirectUrl="/browse"
+      />
+    </AuthLayout>
+  }
+/>
+
+<Route 
+  path="/signup/*" 
+  element={
+    <AuthLayout>
+      <SignUp 
+        routing="path" 
+        path="/signup"
+        forceRedirectUrl="/browse"
+      />
+    </AuthLayout>
+  }
+/>
+
           <Route
             path="/dashboard"
             element={
@@ -91,4 +102,3 @@ function App() {
 }
 
 export default App
-

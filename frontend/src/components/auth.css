@@ -1,0 +1,20 @@
+/* Make the auth page full-height and center its content */
+.auth-page {
+    min-height: 100vh;        /* full viewport height */
+    display: flex;
+    align-items: center;      /* vertical center */
+    justify-content: center;  /* horizontal center */
+    padding: 2rem;            /* breathing room on small screens */
+    box-sizing: border-box;
+    background: transparent;  /* keep existing bg, change if you want */
+  }
+  
+  /* Optional: constrain the width of the auth card on wide screens */
+  .auth-card {
+    width: min(540px, 95%);   /* similar width to Clerk UI; responsive */
+    max-width: 640px;
+  }
+  
+  /* If Clerk injects shadows / border radius you can leave it.
+     If you want to nudge the card higher on very tall screens, use translateY */
+  
