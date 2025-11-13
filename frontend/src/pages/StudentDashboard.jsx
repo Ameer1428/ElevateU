@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth, useUser } from '@clerk/clerk-react'
-import axios from 'axios'
+import api from '../services/api'
 import './StudentDashboard.css'
 
 function StudentDashboard() {
@@ -11,6 +11,7 @@ function StudentDashboard() {
   const [enrollments, setEnrollments] = useState([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('my-courses')
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     if (userId) {
@@ -21,17 +22,27 @@ function StudentDashboard() {
   const fetchEnrollments = async () => {
     try {
       // Ensure user exists in database
-      await axios.post('/api/users', {
+      await api.post('/api/users', {
         clerkId: userId,
         email: user?.primaryEmailAddress?.emailAddress || '',
         name: user?.fullName || 'User',
         role: 'student'
       })
 
-      const response = await axios.get(`/api/enrollments/user/${userId}`)
-      setEnrollments(response.data)
+      const response = await api.get(`/api/enrollments/user/${userId}`)
+      
+      // Handle the response data properly
+      if (response.data && Array.isArray(response.data)) {
+        setEnrollments(response.data)
+      } else {
+        console.error('Invalid response format:', response.data)
+        setEnrollments([])
+        setError('Failed to load enrollments: Invalid data format')
+      }
     } catch (error) {
       console.error('Error fetching enrollments:', error)
+      setEnrollments([])
+      setError('Failed to load enrollments. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -47,8 +58,6 @@ function StudentDashboard() {
   }
 
   const handleAITutor = (courseId) => {
-    // AI Tutor functionality - chatbot is already available via BubbleChat
-    // Could open a modal or navigate to a dedicated chat page
     alert('AI Tutor is available via the chat bubble in the bottom right corner!')
   }
 
@@ -62,6 +71,39 @@ function StudentDashboard() {
 
   if (loading) {
     return <div className="loading">Loading...</div>
+  }
+
+  if (error) {
+    return (
+      <div className="student-dashboard">
+        <header className="dashboard-header">
+          <div className="header-left">
+            <div className="logo" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
+              <div className="logo-icon">📚</div>
+              <span className="logo-text">ElevateU</span>
+            </div>
+          </div>
+          <div className="header-right">
+            <div className="user-profile">
+              <div className="user-avatar">{getInitials(user?.fullName)}</div>
+              <div className="user-info">
+                <div className="user-name">{user?.fullName || 'User'}</div>
+                <div className="user-email">{user?.primaryEmailAddress?.emailAddress || ''}</div>
+              </div>
+            </div>
+            <button className="logout-btn" onClick={handleLogout}>
+              Logout →
+            </button>
+          </div>
+        </header>
+        <div className="error-state">
+          <p>{error}</p>
+          <button className="btn-primary" onClick={fetchEnrollments}>
+            Try Again
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -112,7 +154,7 @@ function StudentDashboard() {
         </div>
 
         <div className="courses-section">
-          {enrollments.length === 0 ? (
+          {!enrollments || enrollments.length === 0 ? (
             <div className="empty-state">
               <p>You haven't enrolled in any courses yet.</p>
               <button className="btn-primary" onClick={() => navigate('/browse')}>
@@ -175,4 +217,3 @@ function StudentDashboard() {
 }
 
 export default StudentDashboard
-

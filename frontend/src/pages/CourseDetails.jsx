@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth, useUser } from '@clerk/clerk-react'
-import axios from 'axios'
+import api from '../services/api'
 import './CourseDetails.css'
 
 function CourseDetails() {
@@ -23,18 +23,18 @@ function CourseDetails() {
   const initialize = async () => {
     try {
       // Ensure user exists
-      await axios.post('/api/users', {
+      await api.post('/api/users', {
         clerkId: userId,
         email: user?.primaryEmailAddress?.emailAddress || '',
         name: user?.fullName || 'User',
         role: 'student'
       })
 
-      const courseRes = await axios.get(`/api/courses/${courseId}`)
+      const courseRes = await api.get(`/api/courses/${courseId}`)
       setCourse(courseRes.data)
 
       try {
-        const progRes = await axios.get(`/api/progress/user/${userId}/course/${courseId}`)
+        const progRes = await api.get(`/api/progress/user/${userId}/course/${courseId}`)
         setProgress(progRes.data)
         setCompletedTopics(progRes.data?.completedTopics || [])
         setNotEnrolled(false)
@@ -51,13 +51,13 @@ function CourseDetails() {
 
   const handleEnroll = async () => {
     try {
-      await axios.post('/api/enrollments', {
+      await api.post('/api/enrollments', {
         userId: userId,
         courseId: courseId
       })
       setNotEnrolled(false)
       // Fetch progress after enrollment
-      const progRes = await axios.get(`/api/progress/user/${userId}/course/${courseId}`)
+      const progRes = await api.get(`/api/progress/user/${userId}/course/${courseId}`)
       setProgress(progRes.data)
       setCompletedTopics(progRes.data?.completedTopics || [])
     } catch (error) {
@@ -73,7 +73,7 @@ function CourseDetails() {
       : [...completedTopics, topicIdx]
 
     try {
-      const res = await axios.post('/api/progress', {
+      const res = await api.post('/api/progress', {
         userId: userId,
         courseId: courseId,
         completedTopics: nextCompleted

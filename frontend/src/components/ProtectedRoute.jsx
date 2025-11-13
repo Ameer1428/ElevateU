@@ -1,7 +1,7 @@
 import { useAuth } from '@clerk/clerk-react'
 import { Navigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import axios from 'axios'
+import api from '../services/api'  
 
 function ProtectedRoute({ children, requireAdmin = false }) {
   const { isLoaded, userId, isSignedIn, user } = useAuth()
@@ -15,7 +15,7 @@ function ProtectedRoute({ children, requireAdmin = false }) {
           const email = user?.primaryEmailAddress?.emailAddress || ''
           const name = user?.fullName || 'User'
           
-          const response = await axios.post('/api/users', {
+          const response = await api.post('/api/users', {
             clerkId: userId,
             email: email,
             name: name,
