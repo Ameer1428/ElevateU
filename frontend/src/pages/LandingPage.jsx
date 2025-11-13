@@ -1,7 +1,7 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate,Link } from 'react-router-dom'
 import { useAuth } from '@clerk/clerk-react'
 import './LandingPage.css'
-
+import Footer from './Footer'
 function LandingPage() {
   const navigate = useNavigate()
   const { isSignedIn } = useAuth()
@@ -32,43 +32,64 @@ function LandingPage() {
     if (isSignedIn) {
       navigate('/admin')
     } else {
-      navigate('/sign-in')
+      navigate('/login')
     }
   }
 
   return (
     <div className="landing-page">
-      <header className="landing-header">
-        <div className="logo">
-          <span className="logo-text">ElevateU</span>
-        </div>
-        <button className="get-started-btn" onClick={handleGetStarted}>
-          Get Started
-        </button>
-      </header>
+          <header className="landing-header">
+      <div className="logo">
+        <span className="logo-text">ElevateU</span>
+      </div>
 
-      <section className="hero-section">
-        <h1 className="hero-title">
-          <span className="gradient-purple-blue">Transform Your Learning</span>
-          <span className="gradient-pink-purple"> Journey with AI</span>
-        </h1>
-        <p className="hero-description">
-          Experience personalized learning powered by advanced RAG technology. Track your progress, 
-          get intelligent recommendations, and achieve your educational goals faster.
-        </p>
-        <div className="hero-buttons">
-          <button className="btn-primary" onClick={handleStartLearning}>
-            Start Learning
-          </button>
+      {/* hide login/signup if user is signed in */}
+      {!isSignedIn && (
+        <div>
+          <Link to="/signup">
+            <button className="get-started-btn" style={{ marginRight: "10px" }}>
+              SignUp
+            </button>
+          </Link>
+          <Link to="/login">
+            <button className="get-started-btn">
+              Login
+            </button>
+          </Link>
+        </div>
+      )}
+    </header>
+
+    <section className="hero-section">
+      <h1 className="hero-title">
+        <span className="gradient-purple-blue">Transform Your Learning</span>
+        <span className="gradient-pink-purple"> Journey with AI</span>
+      </h1>
+
+      <p className="hero-description" style={{ fontSize: "15px" }}>
+        Experience personalized learning powered by advanced RAG technology. Track your progress,
+        get intelligent recommendations, and achieve your educational goals faster.
+      </p>
+
+      <div className="hero-buttons">
+
+        {/* Main CTA — same for both states */}
+        <button className="btn-primary" onClick={handleStartLearning}>
+          Start Learning
+        </button>
+
+        {/* hide Admin Login if user is signed in */}
+        {!isSignedIn && (
           <button className="btn-secondary" onClick={handleAdminLogin}>
             Admin Login
           </button>
-        </div>
-      </section>
+        )}
 
+      </div>
+    </section>
       <section className="features-section">
-        <h2 className="section-title">Why Choose ElevateU?</h2>
-        <p className="section-subtitle">Powerful features designed for modern learners and educators.</p>
+        <h2 className="section-title" >Why To Choose ElevateU?</h2>
+        <p className="section-subtitle" style={{fontSize:"15px"}}>Powerful features designed for modern learners and educators.</p>
         <div className="features-grid">
           <div className="feature-card">
             <div className="feature-icon">📚</div>
@@ -100,21 +121,7 @@ function LandingPage() {
           </div>
         </div>
       </section>
-
-      <section className="stats-section">
-        <div className="stat-item">
-          <div className="stat-number">1000+</div>
-          <div className="stat-label">Active Students</div>
-        </div>
-        <div className="stat-item">
-          <div className="stat-number">50+</div>
-          <div className="stat-label">Expert Courses</div>
-        </div>
-        <div className="stat-item">
-          <div className="stat-number">95%</div>
-          <div className="stat-label">Success Rate</div>
-        </div>
-      </section>
+      <Footer/>
     </div>
   )
 }

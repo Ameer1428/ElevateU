@@ -74,7 +74,6 @@ function BrowseCourses() {
       <header className="dashboard-header">
         <div className="header-left">
           <div className="logo" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
-            <div className="logo-icon">📚</div>
             <span className="logo-text">ElevateU</span>
           </div>
         </div>
