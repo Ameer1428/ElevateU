@@ -22,9 +22,9 @@ function LandingPage() {
 
   const handleStartLearning = () => {
     if (isSignedIn) {
-      navigate('/dashboard')
+      navigate('/browse')
     } else {
-      navigate('/sign-in')
+      navigate('/login')
     }
   }
 
@@ -67,7 +67,7 @@ function LandingPage() {
       </h1>
 
       <p className="hero-description" style={{ fontSize: "15px" }}>
-        Experience personalized learning powered by advanced RAG technology. Track your progress,
+        Experience personalized learning powered by advanced AI technology. Track your progress,
         get intelligent recommendations, and achieve your educational goals faster.
       </p>
 

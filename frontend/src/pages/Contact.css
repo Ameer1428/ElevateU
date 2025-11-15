@@ -1,0 +1,191 @@
+/* GENERAL */
+body {
+  font-family: "Inter", sans-serif;
+  color: #1a1a1a;
+  background: #f8f9fb;
+}
+
+.container {
+  width: 90%;
+  max-width: 1200px;
+  margin: auto;
+}
+
+/* HEADER */
+.header {
+  background: #fff;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 15px 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo h2 {
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.nav a {
+  margin: 0 15px;
+  text-decoration: none;
+  color: #1a1a1a;
+  font-weight: 500;
+}
+
+.header-btn {
+  background: #1e3a8a;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+.header-btn a {
+  color: white;
+  text-decoration: none;
+}
+
+/* HERO SECTION */
+.contact-hero {
+  padding: 80px 0;
+  text-align: center;
+  background: white;
+}
+
+.contact-hero h1 {
+  font-size: 42px;
+  font-weight: 700;
+}
+
+.contact-hero p {
+  margin-top: 10px;
+  color: #4a4a4a;
+}
+
+/* CONTENT GRID */
+.contact-content {
+  padding: 60px 0;
+}
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 40px;
+}
+
+/* LEFT SIDE INFO */
+.contact-info {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.contact-icon {
+  font-size: 26px;
+  margin-right: 12px;
+}
+
+/* FORM */
+.contact-form-container {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+}
+
+.contact-form input,
+.contact-form textarea {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 14px;
+  border-radius: 6px;
+  border: 1px solid #cfd4dc;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 12px;
+  background: #1e3a8a;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* FOOTER */
+.footer {
+  padding: 20px 0;
+  text-align: center;
+  background: #fff;
+  border-top: 1px solid #ddd;
+}
+
+/* CHATBOT */
+.chatbot-logo {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #1e3a8a;
+  color: white;
+  padding: 15px;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.chatbot-window {
+  position: fixed;
+  bottom: 90px;
+  right: 24px;
+  width: 320px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.chatbot-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px;
+  background: #1e3a8a;
+  color: white;
+  border-radius: 12px 12px 0 0;
+}
+
+.chatbot-input {
+  display: flex;
+  padding: 12px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.chatbot-input input {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.chatbot-input button {
+  margin-left: 8px;
+  padding: 8px 12px;
+  background: #1e3a8a;
+  color: white;
+  border: none;
+  border-radius: 6px;
+}
