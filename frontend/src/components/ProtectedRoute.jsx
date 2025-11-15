@@ -15,12 +15,25 @@ function ProtectedRoute({ children, requireAdmin = false }) {
           const email = user?.primaryEmailAddress?.emailAddress || ''
           const name = user?.fullName || 'User'
           
-          const response = await api.post('/api/users', {
-            clerkId: userId,
-            email: email,
-            name: name,
-            role: requireAdmin ? 'admin' : 'student'
-          })
+          // First try to get existing user data
+          let response
+          try {
+            response = await api.get(`/api/users/${userId}`)
+          } catch (error) {
+            // User doesn't exist, create new one
+            // Check if user name matches admin criteria
+            const normalizedEmail = email.toLowerCase()
+            const isAdminEmail = normalizedEmail.includes('admin') ||
+                               normalizedEmail.includes('ameerk') ||
+                               normalizedEmail.includes('demo')
+
+            response = await api.post('/api/users', {
+              clerkId: userId,
+              email: email,
+              name: name,
+              role: isAdminEmail ? 'admin' : 'student'
+            })
+          }
           setUserData(response.data)
         } catch (error) {
           console.error('Error fetching user:', error)

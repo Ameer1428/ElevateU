@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth, useUser } from '@clerk/clerk-react'
 import api from '../services/api'
+import ChatBot from '../components/ChatBot'
 import './StudentDashboard.css'
 
 function StudentDashboard() {
@@ -79,7 +80,6 @@ function StudentDashboard() {
         <header className="dashboard-header">
           <div className="header-left">
             <div className="logo" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
-              <div className="logo-icon">📚</div>
               <span className="logo-text">ElevateU</span>
             </div>
           </div>
@@ -111,7 +111,6 @@ function StudentDashboard() {
       <header className="dashboard-header">
         <div className="header-left">
           <div className="logo" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
-            <div className="logo-icon">📚</div>
             <span className="logo-text">ElevateU</span>
           </div>
         </div>
@@ -142,7 +141,7 @@ function StudentDashboard() {
           >
             My Courses
           </button>
-          <button
+          <button style={{marginTop:"20px"}}
             className={`tab ${activeTab === 'browse' ? 'active' : ''}`}
             onClick={() => {
               setActiveTab('browse')
@@ -153,63 +152,68 @@ function StudentDashboard() {
           </button>
         </div>
 
-        <div className="courses-section">
-          {!enrollments || enrollments.length === 0 ? (
-            <div className="empty-state">
-              <p>You haven't enrolled in any courses yet.</p>
-              <button className="btn-primary" onClick={() => navigate('/browse')}>
-                Browse Courses
-              </button>
-            </div>
-          ) : (
-            <div className="courses-grid">
-              {enrollments.map((enrollment) => {
-                const course = enrollment.course
-                const progress = enrollment.progress
-                const progressPercent = progress?.progress || 0
-                const totalTopics = course?.topics?.length || 0
-                const completedTopics = progress?.completedTopics?.length || 0
+        <div className="dashboard-layout">
+          <div className="courses-section">
+            {!enrollments || enrollments.length === 0 ? (
+              <div className="empty-state">
+                <p>You haven't enrolled in any courses yet.</p>
+                <button className="btn-primary" onClick={() => navigate('/browse')}>
+                  Browse Courses
+                </button>
+              </div>
+            ) : (
+              <div className="courses-grid">
+                {enrollments.map((enrollment) => {
+                  const course = enrollment.course
+                  const progress = enrollment.progress
+                  const progressPercent = progress?.progress || 0
+                  const totalTopics = course?.topics?.length || 0
+                  const completedTopics = progress?.completedTopics?.length || 0
 
-                return (
-                  <div key={enrollment._id} className="course-card">
-                    <div className="course-status">In Progress</div>
-                    <h3 className="course-title">{course?.title}</h3>
-                    <p className="course-description">{course?.description}</p>
-                    <div className="course-meta">
-                      <span>⏱ {course?.duration || 'N/A'}</span>
-                      <span>✓ {totalTopics} topics</span>
-                    </div>
-                    <div className="progress-section">
-                      <div className="progress-bar">
-                        <div
-                          className="progress-fill"
-                          style={{
-                            width: `${progressPercent}%`,
-                            backgroundColor: progressPercent >= 50 ? '#3b82f6' : '#ef4444'
-                          }}
-                        />
+                  return (
+                    <div key={enrollment._id} className="course-card">
+                      <div className="course-status">In Progress</div>
+                      <h3 className="course-title">{course?.title}</h3>
+                      <p className="course-description">{course?.description}</p>
+                      <div className="course-meta">
+                        <span>⏱ {course?.duration || 'N/A'}</span>
+                        <span>✓ {totalTopics} topics</span>
                       </div>
-                      <span className="progress-text">{Math.round(progressPercent)}% Complete</span>
+                      <div className="progress-section">
+                        <div className="progress-bar">
+                          <div
+                            className="progress-fill"
+                            style={{
+                              width: `${progressPercent}%`,
+                              backgroundColor: progressPercent >= 50 ? '#3b82f6' : '#ef4444'
+                            }}
+                          />
+                        </div>
+                        <span className="progress-text">{Math.round(progressPercent)}% Complete</span>
+                      </div>
+                      <div className="course-actions">
+                        <button
+                          className="btn-ai-tutor"
+                          onClick={() => handleAITutor(course?._id)}
+                        >
+                          💬 AI Tutor
+                        </button>
+                        <button
+                          className="btn-view-details"
+                          onClick={() => handleViewDetails(course?._id)}
+                        >
+                          View Details
+                        </button>
+                      </div>
                     </div>
-                    <div className="course-actions">
-                      <button
-                        className="btn-ai-tutor"
-                        onClick={() => handleAITutor(course?._id)}
-                      >
-                        💬 AI Tutor
-                      </button>
-                      <button
-                        className="btn-view-details"
-                        onClick={() => handleViewDetails(course?._id)}
-                      >
-                        View Details
-                      </button>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
+                  )
+                })}
+              </div>
+            )}
+          </div>
+          <div className="chatbot-section">
+            <ChatBot />
+          </div>
         </div>
       </div>
     </div>

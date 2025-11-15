@@ -1,5 +1,6 @@
 // src/components/Footer.jsx
 import React from "react";
+import { Link } from "react-router-dom";
 
 export default function Footer() {
   const footerStyle = {
@@ -34,9 +35,10 @@ export default function Footer() {
       <div style={smallText}>© {new Date().getFullYear()} ElevateU</div>
 
       <div style={tagsStyle}>
-        <span>AI Learning</span>
-        <span>Smart Courses</span>
+        <Link to="/about" style={{color:"white",textDecoration:"none"}}>About</Link>
+        <Link to="/contact" style={{color:"white",textDecoration:"none"}}>Contact</Link>
       </div>
+
     </footer>
   );
 }

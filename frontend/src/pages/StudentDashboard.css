@@ -274,6 +274,29 @@
   color: #64748b;
 }
 
+/* New Dashboard Layout with Chatbot */
+.dashboard-layout {
+  display: flex;
+  gap: 2rem;
+  padding: 0 3rem 3rem;
+}
+
+.courses-section {
+  flex: 1;
+  min-width: 0; /* Allow flex item to shrink */
+}
+
+.chatbot-section {
+  width: 400px;
+  flex-shrink: 0;
+}
+
+/* Chatbot sidebar styles */
+.chatbot-sidebar {
+  position: sticky;
+  top: 2rem;
+}
+
 @media (max-width: 768px) {
   .dashboard-header {
     flex-direction: column;
@@ -283,6 +306,20 @@
 
   .courses-grid {
     grid-template-columns: 1fr;
+  }
+
+  .dashboard-layout {
+    flex-direction: column;
+    padding: 0 1rem 2rem;
+  }
+
+  .chatbot-section {
+    width: 100%;
+    order: 2;
+  }
+
+  .courses-section {
+    order: 1;
   }
 }
 

@@ -7,10 +7,12 @@ import CourseDetails from './pages/CourseDetails'
 import AdminDashboard from './pages/AdminDashboard'
 import StudentDetails from './pages/StudentDetails'
 import ProtectedRoute from './components/ProtectedRoute'
-import ChatBot from './components/ChatBot'
 import AuthLayout from './components/AuthLayout'
-import Signup from './pages/Signup'
-import Login from './pages/Login'
+import ChatBot from './components/ChatBot'
+import About from './pages/About'
+import Contact from './pages/Contact'
+import Footer from './pages/Footer'
+
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || ''
 
 function App() {
@@ -35,7 +37,7 @@ function App() {
       <SignIn 
         routing="path" 
         path="/login"
-        forceRedirectUrl="/browse"
+        forceRedirectUrl="/admin"
       />
     </AuthLayout>
   }
@@ -62,6 +64,8 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
           <Route
             path="/browse"
             element={
@@ -98,6 +102,7 @@ function App() {
         <ChatBot />
       </Router>
     </ClerkProvider>
+    
   )
 }
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth, useUser } from '@clerk/clerk-react'
-import axios from 'axios'
+import api, { adminApi } from '../services/api'
 import './AdminDashboard.css'
 
 function AdminDashboard() {
@@ -24,7 +24,7 @@ function AdminDashboard() {
   const fetchData = async () => {
     try {
       // Ensure admin user exists
-      await axios.post('/api/users', {
+      await api.post('/api/users', {
         clerkId: userId,
         email: user?.primaryEmailAddress?.emailAddress || '',
         name: user?.fullName || 'Admin',
@@ -32,9 +32,9 @@ function AdminDashboard() {
       })
 
       const [statsRes, coursesRes, studentsRes] = await Promise.all([
-        axios.get('/api/admin/stats'),
-        axios.get('/api/courses'),
-        axios.get('/api/admin/students')
+        adminApi.getStats(userId),
+        api.get('/api/courses'),
+        adminApi.getStudents(userId)
       ])
 
       setStats(statsRes.data)
@@ -42,6 +42,7 @@ function AdminDashboard() {
       setStudents(studentsRes.data)
     } catch (error) {
       console.error('Error fetching data:', error)
+      alert('Failed to fetch admin data. Please check your permissions.')
     } finally {
       setLoading(false)
     }
@@ -51,7 +52,7 @@ function AdminDashboard() {
     if (!window.confirm('Are you sure you want to delete this course?')) return
 
     try {
-      await axios.delete(`/api/courses/${courseId}`)
+      await adminApi.deleteCourse(courseId, userId)
       fetchData()
     } catch (error) {
       console.error('Error deleting course:', error)
@@ -85,7 +86,6 @@ function AdminDashboard() {
       <header className="admin-header">
         <div className="header-left">
           <div className="logo" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
-            <div className="logo-icon">📚</div>
             <span className="logo-text">Admin Dashboard</span>
           </div>
         </div>

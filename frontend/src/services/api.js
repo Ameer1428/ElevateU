@@ -39,7 +39,7 @@
 // export default api;
 import axios from 'axios';
 
-const API_BASE = import.meta.env.VITE_API_URL || "https://elevateu-backend.loca.lt";
+const API_BASE = import.meta.env.VITE_API_URL || "https://unrelevantly-statutory-chantay.ngrok-free.dev";
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -80,5 +80,58 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// Admin API functions with authentication
+export const adminApi = {
+  // Get admin stats
+  getStats: (userId) => {
+    return api.get('/api/admin/stats', {
+      headers: {
+        'X-Admin-Key': 'elevateu-admin-2024',
+        'X-User-ID': userId
+      }
+    });
+  },
+
+  // Get all students
+  getStudents: (userId) => {
+    return api.get('/api/admin/students', {
+      headers: {
+        'X-Admin-Key': 'elevateu-admin-2024',
+        'X-User-ID': userId
+      }
+    });
+  },
+
+  // Get student details
+  getStudentDetails: (studentId, userId) => {
+    return api.get(`/api/admin/student/${studentId}`, {
+      headers: {
+        'X-Admin-Key': 'elevateu-admin-2024',
+        'X-User-ID': userId
+      }
+    });
+  },
+
+  // Delete course
+  deleteCourse: (courseId, userId) => {
+    return api.delete(`/api/courses/${courseId}`, {
+      headers: {
+        'X-Admin-Key': 'elevateu-admin-2024',
+        'X-User-ID': userId
+      }
+    });
+  },
+
+  // Create course
+  createCourse: (courseData, userId) => {
+    return api.post('/api/courses', courseData, {
+      headers: {
+        'X-Admin-Key': 'elevateu-admin-2024',
+        'X-User-ID': userId
+      }
+    });
+  }
+};
 
 export default api;
