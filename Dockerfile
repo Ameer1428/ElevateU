@@ -1,50 +1,34 @@
-# ============================
-# 1) Build Frontend (Vite)
-# ============================
-FROM node:20 AS frontend-builder
+# ---------- FRONTEND BUILD ----------
+FROM node:18 AS frontend-build
 
 WORKDIR /app/frontend
-
-COPY frontend/package.json frontend/package-lock.json ./
+COPY frontend/package*.json ./
 RUN npm install
-
-COPY frontend/ .
+COPY frontend ./
 RUN npm run build
 
 
-# Use Python 3.9 slim image
-FROM python:3.9-slim
+# ---------- BACKEND IMAGE ----------
+FROM python:3.10-slim
 
-# Set working directory
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies for Python, Mongo, etc.
 RUN apt-get update && apt-get install -y \
-    gcc \
-    g++ \
+    build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first for better caching
-COPY backend/requirements.txt .
-
-# Install Python dependencies
+# Copy backend
+COPY backend/ ./backend/
+COPY backend/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
-COPY backend/ .
-
-# Create necessary directories
-RUN mkdir -p agent static
-
-# Copy .env file (if it exists)
-COPY .env .env
+# Copy React build into Flask static folder
+RUN mkdir -p backend/static
+COPY --from=frontend-build /app/frontend/dist/ ./backend/static/
 
 # Expose port
 EXPOSE 5000
 
-# Set environment variables
-ENV FLASK_ENV=production
-ENV PYTHONPATH=/app
-
-# Run the application
+WORKDIR /app/backend
 CMD ["python", "app.py"]
