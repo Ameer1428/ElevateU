@@ -21,11 +21,35 @@ jobs:
           key: ${{ secrets.AZURE_VM_SSH_KEY }}
           script: |
             cd ~/ElevateU
-            git pull
-
+            
+            # Pull latest changes
+            echo "Pulling latest code..."
+            git pull origin main
+            
+            # Stop and remove existing container
+            echo "Stopping existing container..."
             sudo docker stop elevateu-container || true
             sudo docker rm elevateu-container || true
+            
+            # Clean up images
+            echo "Cleaning up Docker images..."
             sudo docker image prune -a -f
-
-            sudo docker build -t elevateu .
-            sudo docker run -d -p 5000:5000 --name elevateu-container elevateu:latest
+            
+            # Build new Docker image
+            echo "Building new Docker image..."
+            sudo docker build -t elevateu-app .
+            
+            # Run new container (Docker will automatically use the .env file)
+            echo "Starting new container..."
+            sudo docker run -d \
+              -p 5000:5000 \
+              --name elevateu-container \
+              elevateu-app:latest
+            
+            # Check if container is running
+            echo "Checking container status..."
+            sudo docker ps -a | grep elevateu-container
+            
+            # Show recent logs
+            echo "Container logs:"
+            sudo docker logs elevateu-container --tail 50
