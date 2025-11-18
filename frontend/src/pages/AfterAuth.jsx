@@ -20,31 +20,33 @@ export default function AfterAuth() {
 
       try {
         // Create/sync user in backend
-        await fetch("http://localhost:5000/api/users", {
+        const response = await fetch("http://localhost:5000/api/users", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
           body: JSON.stringify({
-            id: user.id,
+            clerkId: user.id,
             email: user.primaryEmailAddress?.emailAddress || null,
             name: fullName,
           }),
         });
 
-        // Normalize name for comparison
-        const normalizedName = (fullName || "").toLowerCase();
+        const userData = await response.json();
 
-        // Conditional navigation
-        if (normalizedName === "admin") {
+        // Check if user is admin (only from backend role - no fallbacks!)
+        const isAdmin = userData.role === 'admin';
+
+        // Conditional navigation based on user role
+        if (isAdmin) {
           navigate("/admin");
         } else {
-          navigate("/browse");
+          navigate("/dashboard");
         }
       } catch (err) {
         console.error("Error syncing user:", err);
-        navigate("/browse"); // fallback
+        navigate("/dashboard"); // fallback
       }
     })();
   }, [isLoaded, isSignedIn, user, getToken, navigate]);

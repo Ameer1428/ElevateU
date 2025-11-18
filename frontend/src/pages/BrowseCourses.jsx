@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth, useUser } from '@clerk/clerk-react'
 import api from '../services/api'
+import { getInitials } from '../utils/helpers'
 import './BrowseCourses.css'
 
 function BrowseCourses() {
@@ -61,10 +62,7 @@ function BrowseCourses() {
     navigate('/dashboard')
   }
 
-  const getInitials = (name) => {
-    return name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U'
-  }
-
+  
   if (loading) {
     return <div className="loading">Loading...</div>
   }

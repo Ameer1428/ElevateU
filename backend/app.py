@@ -9,13 +9,14 @@ from flask import send_from_directory
 from dotenv import load_dotenv
 import atexit
 import functools
+from agent.agent_core import ElevateUAgent
 
-# Import our simplified intelligent chatbot service
+# Import our intelligent chatbot service
 try:
-    from simple_intelligent_chatbot import SimpleIntelligentChatbot
+    from agent.agent_core import ElevateUAgent
     chatbot_available = True
 except ImportError as e:
-    print(f"Chatbot service not available: {e}")
+    print(f"Chatbot Agent service not available: {e}")
     chatbot_available = False
 
 load_dotenv()
@@ -76,6 +77,21 @@ else:
     study_updates_collection = None
     chat_sessions_collection = None
 
+# Initialize the ElevateUAgent only once with proper parameters
+agent = None
+if chatbot_available and db is not None:
+    try:
+        agent = ElevateUAgent(
+            mongo_db=db,
+            api_key=os.getenv("GEMINI_API_KEY")
+        )
+        print(" * ElevateU Agent initialized successfully")
+    except Exception as e:
+        print(f" * Failed to initialize ElevateU Agent: {e}")
+        agent = None
+else:
+    print(" * ElevateU Agent not initialized (missing dependencies)")
+
 def safe_progress(progress, course):
     """Ensures progress is always a valid dict structure"""
     if not isinstance(progress, dict):
@@ -102,16 +118,6 @@ def sanitize_topics(topics):
         if isinstance(t, dict):
             clean.append(t)
     return clean
-
-# Initialize simplified intelligent chatbot
-chatbot = None
-if chatbot_available:
-    try:
-        chatbot = SimpleIntelligentChatbot()
-        print(" * Simple Intelligent ElevateU Chatbot initialized successfully")
-    except Exception as e:
-        print(f"- Failed to initialize simplified intelligent chatbot: {e}")
-        print("Chatbot will run in basic fallback mode")
 
 # Helper function to convert ObjectId to string
 def serialize_doc(doc):
@@ -238,16 +244,8 @@ def delete_course(course_id):
 def create_user():
     data = request.json
 
-    # Intelligent admin role assignment
+    # Default role unless admin manually assigned
     role = data.get('role', 'student')
-    if role == 'student':
-        # Auto-detect admin users based on email patterns
-        email = data.get('email', '').lower()
-        name = data.get('name', '').lower()
-
-        if (email and ('admin' in email or 'ameerk' in email or 'demo' in email)) or \
-           (name and ('admin' in name or 'administrator' in name)):
-            role = 'admin'
 
     user = {
         'clerkId': data.get('clerkId'),
@@ -1003,302 +1001,236 @@ def health_check():
             'mongodb': False
         }), 503
 
-# Enhanced Chatbot API with Gemini 2.5 Flash
+# ------------------ NEW AGENT POWERED CHATBOT ENDPOINT ------------------
+
 @app.route('/api/chatbot/message', methods=['POST'])
 def chatbot_message():
-    """Enhanced chatbot message handler with Gemini 2.5 Flash"""
+    """ElevateU Agent (Gemini + Mongo + Tools + Memory)"""
     try:
         data = request.json
-        message = data.get('message', '')
-        user_id = data.get('userId')
-        user_name = data.get('userName', 'User')
-        user_email = data.get('userEmail', '')
-        session_id = data.get('sessionId', f"session_{datetime.now().timestamp()}")
+        message = data.get("message", "")
+        user_id = data.get("userId")
+        user_name = data.get("userName", "User")
+        user_email = data.get("userEmail", "")
+        session_id = data.get("sessionId", f"session_{datetime.now().timestamp()}")
 
         if not message:
-            return jsonify({'error': 'Message is required'}), 400
+            return jsonify({"error": "Message is required"}), 400
 
-        # Save user message to chat history
+        # -------------------------------------------------------
+        # 1. SAVE USER MESSAGE TO CHAT HISTORY (same as before)
+        # -------------------------------------------------------
         if chat_sessions_collection is not None:
             chat_sessions_collection.update_one(
-                {'sessionId': session_id},
+                {"sessionId": session_id},
                 {
-                    '$set': {
-                        'userId': user_id,
-                        'userName': user_name,
-                        'userEmail': user_email,
-                        'updatedAt': datetime.now(timezone.utc)
+                    "$set": {
+                        "userId": user_id,
+                        "userName": user_name,
+                        "userEmail": user_email,
+                        "updatedAt": datetime.now(timezone.utc)
                     },
-                    '$push': {
-                        'messages': {
-                            'type': 'user',
-                            'content': message,
-                            'timestamp': datetime.now(timezone.utc).isoformat()
+                    "$push": {
+                        "messages": {
+                            "type": "user",
+                            "content": message,
+                            "timestamp": datetime.now(timezone.utc).isoformat()
                         }
                     }
                 },
                 upsert=True
             )
 
-        # Get user context if user_id is provided
+        # -------------------------------------------------------
+        # 2. BUILD USER CONTEXT (YOUR ORIGINAL FULL LOGIC)
+        # -------------------------------------------------------
         user_context = None
         if user_id and db is not None:
             try:
-                # Use existing user context endpoint logic
                 user = users_collection.find_one({
-                    '$or': [
-                        {'clerkId': user_id},
-                        {'clerkId': str(user_id)},
-                        {'_id': ObjectId(user_id) if ObjectId.is_valid(user_id) else None}
+                    "$or": [
+                        {"clerkId": user_id},
+                        {"clerkId": str(user_id)},
+                        {"_id": ObjectId(user_id) if ObjectId.is_valid(user_id) else None}
                     ]
                 })
 
                 if user:
-                    # Get enrollments with progress
                     enrollments = list(enrollments_collection.find({
-                        '$or': [
-                            {'userId': user_id},
-                            {'userId': str(user_id)},
-                            {'userId': str(user['_id'])}
+                        "$or": [
+                            {"userId": user_id},
+                            {"userId": str(user_id)},
+                            {"userId": str(user["_id"])}
                         ]
                     }))
 
-                    # Get detailed progress for each enrollment
                     course_progress = []
                     total_progress = 0
 
                     for enrollment in enrollments:
                         try:
-                            course = courses_collection.find_one({'_id': ObjectId(enrollment['courseId'])})
+                            course = courses_collection.find_one({
+                                "_id": ObjectId(enrollment["courseId"])
+                            })
                             if not course:
                                 continue
 
                             progress = progress_collection.find_one({
-                                '$or': [
-                                    {'userId': user_id, 'courseId': enrollment['courseId']},
-                                    {'userId': str(user_id), 'courseId': enrollment['courseId']},
-                                    {'userId': str(user.get('_id')), 'courseId': enrollment['courseId']}
+                                "$or": [
+                                    {"userId": user_id, "courseId": enrollment["courseId"]},
+                                    {"userId": str(user_id), "courseId": enrollment["courseId"]},
+                                    {"userId": str(user.get("_id")), "courseId": enrollment["courseId"]}
                                 ]
                             })
 
-                            # Always convert safely - FIXED: Handle case where progress might be None
                             if progress and isinstance(progress, dict):
                                 p = safe_progress(progress, course)
                             else:
                                 p = safe_progress({}, course)
 
-                            # Ensure completedTopics is a clean list of integers
-                            if not isinstance(p['completedTopics'], list):
-                                p['completedTopics'] = []
+                            # clean completed topics
+                            if not isinstance(p["completedTopics"], list):
+                                p["completedTopics"] = []
                             else:
-                                # Safely convert to integers
-                                clean_completed = []
-                                for item in p['completedTopics']:
+                                clean = []
+                                for item in p["completedTopics"]:
                                     try:
                                         if isinstance(item, int):
-                                            clean_completed.append(item)
+                                            clean.append(item)
                                         elif isinstance(item, str) and item.isdigit():
-                                            clean_completed.append(int(item))
+                                            clean.append(int(item))
                                     except:
                                         continue
-                                p['completedTopics'] = clean_completed
+                                p["completedTopics"] = clean
 
-                            # Ensure topics is a list
-                            if not isinstance(p['topics'], list):
-                                p['topics'] = []
+                            if not isinstance(p["topics"], list):
+                                p["topics"] = []
 
                             cp = {
-                                'courseTitle': str(course.get('title', 'Untitled')),
-                                'courseId': str(course.get('_id')),
-                                'progress': float(p.get('progress', 0)) if isinstance(p.get('progress'), (int, float)) else 0,
-                                'completedTopics': p['completedTopics'],
-                                'totalTopics': int(p.get('totalTopics', len(course.get('topics', [])))),
-                                'topics': p['topics'],
-                                'enrolledAt': enrollment.get('enrolledAt')
+                                "courseTitle": str(course.get("title", "Untitled")),
+                                "courseId": str(course.get("_id")),
+                                "progress": float(p.get("progress", 0)),
+                                "completedTopics": p["completedTopics"],
+                                "totalTopics": int(p.get("totalTopics", len(course.get("topics", [])))),
+                                "topics": p["topics"],
+                                "enrolledAt": enrollment.get("enrolledAt")
                             }
 
                             course_progress.append(cp)
-                            total_progress += cp['progress']
+                            total_progress += cp["progress"]
 
                         except Exception as e:
-                            print(f"Error processing enrollment {enrollment.get('courseId')}: {e}")
+                            print(f"Error processing enrollment: {e}")
                             continue
 
-                    # Calculate average progress
                     avg_progress = total_progress / len(course_progress) if course_progress else 0
 
-                    # Get recommended courses (not enrolled)
-                    enrolled_course_ids = [e['courseId'] for e in enrollments]
+                    enrolled_ids = [e["courseId"] for e in enrollments]
                     recommended_courses = list(courses_collection.find({
-                        '_id': {'$nin': [ObjectId(cid) for cid in enrolled_course_ids]}
+                        "_id": {"$nin": [ObjectId(cid) for cid in enrolled_ids]}
                     }).limit(5))
 
-                    # Enhanced user context for intelligent chatbot
-                    completed_courses = sum(1 for progress in course_progress if progress['progress'] >= 100)
-                    active_courses = sum(1 for progress in course_progress if 0 < progress['progress'] < 100)
+                    completed_courses = sum(1 for p in course_progress if p["progress"] >= 100)
+                    active_courses = sum(1 for p in course_progress if 0 < p["progress"] < 100)
 
-                    # Build enrollment list
                     enrollment_list = []
                     for enrollment in enrollments:
-                        matched_progress = next(
-                            (cp for cp in course_progress if cp['courseId'] == enrollment['courseId']),
+                        matched = next(
+                            (cp for cp in course_progress if cp["courseId"] == enrollment["courseId"]),
                             None
                         )
-                        
+
                         course_obj = {
-                            'title': matched_progress.get('courseTitle', 'Unknown') if matched_progress else 'Unknown',
-                            'topics': matched_progress.get('topics', []) if matched_progress else []
+                            "title": matched.get("courseTitle", "Unknown") if matched else "Unknown",
+                            "topics": matched.get("topics", []) if matched else []
                         }
 
                         enrollment_list.append({
-                            'courseId': enrollment.get('courseId'),
-                            'enrolledAt': enrollment.get('enrolledAt'),
-                            'progress': matched_progress['progress'] if matched_progress else 0,
-                            'lastAccessed': enrollment.get('lastAccessed'),
-                            'course': course_obj
+                            "courseId": enrollment.get("courseId"),
+                            "enrolledAt": enrollment.get("enrolledAt"),
+                            "progress": matched["progress"] if matched else 0,
+                            "lastAccessed": enrollment.get("lastAccessed"),
+                            "course": course_obj
                         })
 
-                    # Build final user_context object
                     user_context = {
-                        'user': {
-                            'userId': user_id,
-                            'name': user.get('name'),
-                            'email': user.get('email'),
-                            'role': user.get('role'),
-                            'createdAt': user.get('createdAt')
+                        "user": {
+                            "userId": user_id,
+                            "name": user.get("name"),
+                            "email": user.get("email"),
+                            "role": user.get("role"),
+                            "createdAt": user.get("createdAt")
                         },
-                        'learning': {
-                            'totalEnrollments': len(enrollments),
-                            'averageProgress': round(avg_progress, 2),
-                            'completedCourses': completed_courses,
-                            'activeCourses': active_courses,
-                            'courseProgress': course_progress,
-                            'completionRate': round((completed_courses / len(enrollments) * 100), 1) if enrollments else 0
+                        "learning": {
+                            "totalEnrollments": len(enrollments),
+                            "averageProgress": round(avg_progress, 2),
+                            "completedCourses": completed_courses,
+                            "activeCourses": active_courses,
+                            "courseProgress": course_progress,
+                            "completionRate": round(
+                                (completed_courses / len(enrollments) * 100), 1
+                            ) if enrollments else 0
                         },
-                        'enrollments': enrollment_list,
-                        'recommendations': [{
-                            'courseId': str(course['_id']),
-                            'title': course.get('title'),
-                            'description': course.get('description'),
-                            'instructor': course.get('instructor', 'TBA'),
-                            'topics': course.get('topics', []),
-                            'difficulty': course.get('difficulty', 'beginner'),
-                            'duration': course.get('duration', '4 weeks')
+                        "enrollments": enrollment_list,
+                        "recommendations": [{
+                            "courseId": str(course["_id"]),
+                            "title": course.get("title"),
+                            "description": course.get("description"),
+                            "instructor": course.get("instructor", "TBA"),
+                            "topics": course.get("topics", []),
+                            "difficulty": course.get("difficulty", "beginner"),
+                            "duration": course.get("duration", "4 weeks")
                         } for course in recommended_courses]
                     }
 
             except Exception as e:
-                print(f"Error getting user context: {e}")
-                import traceback
-                traceback.print_exc()
+                print("Error building user context:", e)
                 user_context = None
 
-        # Use Gemini chatbot if available, otherwise fallback
-        if chatbot:
-            try:
-                response_data = chatbot.process_message(
-                    message=message,
-                    user_data=user_context,
-                    user_id=user_id
-                )
+        # -------------------------------------------------------
+        # 3. PASS MESSAGE INTO THE NEW AI AGENT
+        # -------------------------------------------------------
+        agent_reply = agent.process_message(
+            message=message,
+            user_id=user_id
+        )
 
-                # Save bot response to chat history
-                if chat_sessions_collection is not None:
-                    chat_sessions_collection.update_one(
-                        {'sessionId': session_id},
-                        {
-                            '$push': {
-                                'messages': {
-                                    'type': 'bot',
-                                    'content': response_data.get('response', 'No response generated'),
-                                    'timestamp': datetime.now(timezone.utc).isoformat(),
-                                    'response_type': response_data.get('response_type', 'general'),
-                                    'suggested_actions': response_data.get('suggested_actions', [])
-                                }
-                            }
+        # -------------------------------------------------------
+        # 4. SAVE AGENT RESPONSE INTO CHAT HISTORY
+        # -------------------------------------------------------
+        if chat_sessions_collection is not None:
+            chat_sessions_collection.update_one(
+                {"sessionId": session_id},
+                {
+                    "$push": {
+                        "messages": {
+                            "type": "agent",
+                            "content": agent_reply.get("reply", ""),
+                            "timestamp": datetime.now(timezone.utc).isoformat(),
+                            "action": agent_reply.get("action", "none"),
+                            "data": agent_reply.get("data", {})
                         }
-                    )
+                    }
+                }
+            )
 
-                return jsonify({
-                    'response': response_data.get('response', 'No response generated'),
-                    'response_type': response_data.get('response_type', 'general'),
-                    'suggested_actions': response_data.get('suggested_actions', []),
-                    'context_used': response_data.get('context_used', False),
-                    'user_context_summary': response_data.get('user_context_summary'),
-                    'sessionId': session_id,
-                    'userId': user_id,
-                    'timestamp': datetime.now().isoformat()
-                })
-            except Exception as e:
-                print(f"Error in chatbot processing: {e}")
-                import traceback
-                traceback.print_exc()
-                # Fallback response
-                return jsonify({
-                    'response': "I'm here to help track your learning progress! Currently, I can see you're enrolled in courses and making great progress. Keep up the good work!",
-                    'response_type': 'fallback',
-                    'context_used': False,
-                    'sessionId': session_id,
-                    'userId': user_id,
-                    'timestamp': datetime.now().isoformat()
-                })
-
-        else:
-            # Fallback to simple rule-based responses
-            message_lower = message.lower()
-            user_display_name = user_name if user_name != 'User' else 'there'
-
-            if any(word in message_lower for word in ['hello', 'hi', 'hey', 'greetings']):
-                response = f"Hello {user_display_name}! I'm your ElevateU learning assistant. I can help you track your progress, recommend courses, and provide learning guidance. How can I assist you today?"
-
-            elif any(word in message_lower for word in ['courses', 'course', 'enrolled', 'learning']):
-                if user_context and user_context['learning']['totalEnrollments'] > 0:
-                    response = f"You're enrolled in {user_context['learning']['totalEnrollments']} course(s) with an average progress of {user_context['learning']['averageProgress']}%. Would you like me to show you your detailed progress or recommend some new courses?"
-                else:
-                    response = "You're not enrolled in any courses yet. I'd be happy to recommend some courses based on your interests!"
-
-            elif any(word in message_lower for word in ['progress', 'how am i doing', 'status']):
-                if user_context:
-                    avg_progress = user_context['learning']['averageProgress']
-                    total_enrollments = user_context['learning']['totalEnrollments']
-                    response = f"Your current progress: {avg_progress:.1f}% average across {total_enrollments} course(s). "
-                    if avg_progress < 30:
-                        response += "You're just getting started! Keep up the effort and consider setting daily learning goals."
-                    elif avg_progress < 70:
-                        response += "Great progress! You're making steady advancement. Keep the momentum going!"
-                    else:
-                        response += "Excellent work! You're mastering your courses well. Consider exploring new topics!"
-                else:
-                    response = "Keep up the great work! Consistency is key to successful learning."
-
-            elif any(word in message_lower for word in ['recommend', 'suggest', 'what should i learn']):
-                if user_context and user_context['recommendations']:
-                    rec_count = len(user_context['recommendations'])
-                    response = f"I have {rec_count} course recommendations for you! Based on your learning profile, you might enjoy courses like: {', '.join([rec['title'] for rec in user_context['recommendations'][:3]])}. Would you like details about any of these?"
-                else:
-                    response = "I can help you find the perfect course! What topics or skills are you most interested in learning?"
-
-            else:
-                response = f"Thanks for your message, {user_display_name}! I'm here to help with your learning journey. I can assist with course information, progress tracking, study tips, and personalized recommendations. What would you like to know?"
-
-            return jsonify({
-                'response': response,
-                'response_type': 'fallback',
-                'context_used': user_context is not None,
-                'sessionId': session_id,
-                'userId': user_id,
-                'timestamp': datetime.now().isoformat(),
-                'fallback_mode': True
-            })
+        # -------------------------------------------------------
+        # 5. RETURN CLEAN RESPONSE TO FRONTEND
+        # -------------------------------------------------------
+        return jsonify({
+            "reply": agent_reply.get("reply", ""),
+            "action": agent_reply.get("action", "none"),
+            "data": agent_reply.get("data"),
+            "sessionId": session_id,
+            "userId": user_id,
+            "timestamp": datetime.now().isoformat()
+        })
 
     except Exception as e:
-        print(f"Error in chatbot message handler: {e}")
-        import traceback
-        traceback.print_exc()
+        print("ERROR in chatbot message:", e)
         return jsonify({
-            'response': 'I apologize, but I encountered an error processing your request. Please try again in a moment.',
-            'error': str(e),
-            'fallback_mode': True
+            "reply": "Sorry Ameer, something went wrong.",
+            "error": str(e)
         }), 500
 
 # Chat history endpoints

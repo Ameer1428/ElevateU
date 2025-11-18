@@ -1,13 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import './About.css';
-import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/clerk-react";
 
 const About = () => {
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const { user } = useUser();
-
-  const toggleChat = () => setIsChatOpen(!isChatOpen);
 
   const teamMembers = [
     { name: "Ameer", role: "Founder & CEO", bio: "10+ years in EdTech", avatar: "👨‍💼" },
