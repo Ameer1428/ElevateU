@@ -1,55 +1,46 @@
-name: Deploy to Azure VM
+name: Deploy ElevateU to Azure VM (No DockerHub)
 
 on:
   push:
-    branches:
-      - main
+    branches: ["main"]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-      - name: Deploy to Azure VM via SSH
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ secrets.AZURE_VM_IP }}
-          username: ${{ secrets.AZURE_VM_USER }}
-          key: ${{ secrets.AZURE_VM_SSH_KEY }}
-          script: |
-            cd ~/ElevateU
-            
-            # Pull latest changes
-            echo "Pulling latest code..."
-            git pull origin main
-            
-            # Stop and remove existing container
-            echo "Stopping existing container..."
-            sudo docker stop elevateu-container || true
-            sudo docker rm elevateu-container || true
-            
-            # Clean up images
-            echo "Cleaning up Docker images..."
-            sudo docker image prune -a -f
-            
-            # Build new Docker image
-            echo "Building new Docker image..."
-            sudo docker build -t elevateu-app .
-            
-            # Run new container (Docker will automatically use the .env file)
-            echo "Starting new container..."
-            sudo docker run -d \
-              -p 5000:5000 \
-              --name elevateu-container \
-              elevateu-app:latest
-            
-            # Check if container is running
-            echo "Checking container status..."
-            sudo docker ps -a | grep elevateu-container
-            
-            # Show recent logs
-            echo "Container logs:"
-            sudo docker logs elevateu-container --tail 50
+    - name: Copy project to server (rsync)
+      uses: burnett01/rsync-deployments@5.2
+      with:
+        switches: -avzr --delete
+        path: ./
+        remote_path: /home/${{ secrets.AZURE_USER }}/elevateu/
+        remote_host: ${{ secrets.AZURE_HOST }}
+        remote_user: ${{ secrets.AZURE_USER }}
+        remote_key: ${{ secrets.AZURE_SSH_KEY }}
+
+    - name: SSH into VM and deploy
+      uses: appleboy/ssh-action@v0.1.8
+      with:
+        host: ${{ secrets.AZURE_HOST }}
+        username: ${{ secrets.AZURE_USER }}
+        key: ${{ secrets.AZURE_SSH_KEY }}
+        script: |
+          cd elevateu
+
+          echo "🔧 Building Docker image..."
+          docker build -t elevateu-app .
+
+          echo "🛑 Stopping old container..."
+          docker stop elevateu || true
+          docker rm elevateu || true
+
+          echo "🚀 Starting new container..."
+          docker run -d -p 80:5000 --name elevateu \
+            -e MONGO_URI="${{ secrets.MONGO_URI }}" \
+            -e DB_NAME="elevateu" \
+            -e GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
+            elevateu-app
