@@ -3,7 +3,7 @@ from flask_cors import CORS
 from pymongo import MongoClient
 from pymongo.errors import ServerSelectionTimeoutError, ConnectionFailure
 from bson import ObjectId
-from datetime import datetime
+from datetime import datetime, timezone
 import os
 from dotenv import load_dotenv
 import atexit
@@ -23,7 +23,7 @@ app = Flask(__name__)
 CORS(app)
 
 # MongoDB connection with connection pooling and error handling
-MONGO_URI = os.getenv('MONGO_URI', 'mongodb://localhost:27017/')
+MONGO_URI = os.getenv('MONGO_URI')
 DB_NAME = os.getenv('DB_NAME', 'elevateu')
 
 try:
@@ -75,12 +75,39 @@ else:
     study_updates_collection = None
     chat_sessions_collection = None
 
+def safe_progress(progress, course):
+    """Ensures progress is always a valid dict structure"""
+    if not isinstance(progress, dict):
+        progress = {}
+
+    # Ensure course topics is a list
+    course_topics = course.get("topics", [])
+    if not isinstance(course_topics, list):
+        course_topics = []
+
+    return {
+        "progress": progress.get("progress", 0),
+        "completedTopics": progress.get("completedTopics", []),
+        "totalTopics": len(course_topics),
+        "topics": course_topics,
+    }
+
+def sanitize_topics(topics):
+    """Ensure topics is always a list of dicts."""
+    if not isinstance(topics, list):
+        return []
+    clean = []
+    for t in topics:
+        if isinstance(t, dict):
+            clean.append(t)
+    return clean
+
 # Initialize simplified intelligent chatbot
 chatbot = None
 if chatbot_available:
     try:
         chatbot = SimpleIntelligentChatbot()
-        print("+ Simple Intelligent ElevateU Chatbot initialized successfully")
+        print(" * Simple Intelligent ElevateU Chatbot initialized successfully")
     except Exception as e:
         print(f"- Failed to initialize simplified intelligent chatbot: {e}")
         print("Chatbot will run in basic fallback mode")
@@ -144,7 +171,7 @@ def create_course():
         'instructor': data.get('instructor', ''),
         'duration': data.get('duration', ''),
         'topics': data.get('topics', []),
-        'createdAt': datetime.utcnow().isoformat()
+        'createdAt': datetime.now(timezone.utc).isoformat()
     }
     result = courses_collection.insert_one(course)
     course['_id'] = str(result.inserted_id)
@@ -207,7 +234,7 @@ def create_user():
         'name': data.get('name'),
         'email': data.get('email'),
         'role': role,
-        'createdAt': datetime.utcnow().isoformat()
+        'createdAt': datetime.now(timezone.utc).isoformat()
     }
     # Check if user already exists by clerkId or email
     existing = users_collection.find_one({
@@ -262,7 +289,7 @@ def create_enrollment():
     enrollment = {
         'userId': data.get('userId'),
         'courseId': data.get('courseId'),
-        'enrolledAt': datetime.utcnow().isoformat(),
+        'enrolledAt': datetime.now(timezone.utc).isoformat(),
         'status': 'in_progress'
     }
     # Check if already enrolled
@@ -276,13 +303,15 @@ def create_enrollment():
     enrollment['_id'] = str(result.inserted_id)
     # Initialize progress
     course = courses_collection.find_one({'_id': ObjectId(enrollment['courseId'])})
+    # Sanitize topics list
+    course['topics'] = sanitize_topics(course.get('topics', []))
     if course:
         progress = {
             'userId': enrollment['userId'],
             'courseId': enrollment['courseId'],
             'completedTopics': [],
             'progress': 0,
-            'lastUpdated': datetime.utcnow().isoformat()
+            'lastUpdated': datetime.now(timezone.utc).isoformat()
         }
         progress_collection.insert_one(progress)
     return jsonify(serialize_doc(enrollment)), 201
@@ -375,7 +404,7 @@ def update_progress():
             {'$set': {
                 'completedTopics': completed_topics,
                 'progress': progress_percent,
-                'lastUpdated': datetime.utcnow().isoformat()
+                'lastUpdated': datetime.now(timezone.utc).isoformat()
             }}
         )
         updated = progress_collection.find_one({'_id': progress['_id']})
@@ -421,7 +450,7 @@ def create_study_update():
         'userId': data.get('userId'),
         'courseId': data.get('courseId'),
         'content': data.get('content'),
-        'date': data.get('date', datetime.utcnow().isoformat()),
+        'date': data.get('date', datetime.now(timezone.utc).isoformat()),
         'verified': False,
         'adminComment': None
     }
@@ -849,7 +878,7 @@ def get_user_context_flowise():
                 'instructor': course.get('instructor', 'TBA')
             } for course in recommended_courses],
             'context': {
-                'timestamp': datetime.utcnow().isoformat(),
+                'timestamp': datetime.now(timezone.utc).isoformat(),
                 'platform': 'ElevateU'
             }
         })
@@ -894,7 +923,7 @@ def update_progress_flowise():
             'courseId': course_id,
             'completedTopics': completed_topics,
             'progress': progress_percent,
-            'lastUpdated': datetime.utcnow().isoformat()
+            'lastUpdated': datetime.now(timezone.utc).isoformat()
         }
         
         # Update or insert progress
@@ -978,13 +1007,13 @@ def chatbot_message():
                         'userId': user_id,
                         'userName': user_name,
                         'userEmail': user_email,
-                        'updatedAt': datetime.utcnow()
+                        'updatedAt': datetime.now(timezone.utc)
                     },
                     '$push': {
                         'messages': {
                             'type': 'user',
                             'content': message,
-                            'timestamp': datetime.utcnow().isoformat()
+                            'timestamp': datetime.now(timezone.utc).isoformat()
                         }
                     }
                 },
@@ -1021,28 +1050,58 @@ def chatbot_message():
                     for enrollment in enrollments:
                         try:
                             course = courses_collection.find_one({'_id': ObjectId(enrollment['courseId'])})
-                            if course:
-                                progress = progress_collection.find_one({
-                                    '$or': [
-                                        {'userId': user_id, 'courseId': enrollment['courseId']},
-                                        {'userId': str(user_id), 'courseId': enrollment['courseId']},
-                                        {'userId': str(user['_id']), 'courseId': enrollment['courseId']}
-                                    ]
-                                })
+                            if not course:
+                                continue
 
-                                progress_data = {
-                                    'courseTitle': course.get('title'),
-                                    'courseId': str(course['_id']),
-                                    'progress': progress.get('progress', 0) if progress else 0,
-                                    'completedTopics': progress.get('completedTopics', []) if progress else [],
-                                    'totalTopics': len(course.get('topics', [])),
-                                    'topics': course.get('topics', []),
-                                    'enrolledAt': enrollment.get('enrolledAt')
-                                }
-                                course_progress.append(progress_data)
-                                total_progress += progress_data['progress']
+                            progress = progress_collection.find_one({
+                                '$or': [
+                                    {'userId': user_id, 'courseId': enrollment['courseId']},
+                                    {'userId': str(user_id), 'courseId': enrollment['courseId']},
+                                    {'userId': str(user.get('_id')), 'courseId': enrollment['courseId']}
+                                ]
+                            })
+
+                            # Always convert safely - FIXED: Handle case where progress might be None
+                            if progress and isinstance(progress, dict):
+                                p = safe_progress(progress, course)
+                            else:
+                                p = safe_progress({}, course)
+
+                            # Ensure completedTopics is a clean list of integers
+                            if not isinstance(p['completedTopics'], list):
+                                p['completedTopics'] = []
+                            else:
+                                # Safely convert to integers
+                                clean_completed = []
+                                for item in p['completedTopics']:
+                                    try:
+                                        if isinstance(item, int):
+                                            clean_completed.append(item)
+                                        elif isinstance(item, str) and item.isdigit():
+                                            clean_completed.append(int(item))
+                                    except:
+                                        continue
+                                p['completedTopics'] = clean_completed
+
+                            # Ensure topics is a list
+                            if not isinstance(p['topics'], list):
+                                p['topics'] = []
+
+                            cp = {
+                                'courseTitle': str(course.get('title', 'Untitled')),
+                                'courseId': str(course.get('_id')),
+                                'progress': float(p.get('progress', 0)) if isinstance(p.get('progress'), (int, float)) else 0,
+                                'completedTopics': p['completedTopics'],
+                                'totalTopics': int(p.get('totalTopics', len(course.get('topics', [])))),
+                                'topics': p['topics'],
+                                'enrolledAt': enrollment.get('enrolledAt')
+                            }
+
+                            course_progress.append(cp)
+                            total_progress += cp['progress']
+
                         except Exception as e:
-                            print(f"Error processing enrollment: {e}")
+                            print(f"Error processing enrollment {enrollment.get('courseId')}: {e}")
                             continue
 
                     # Calculate average progress
@@ -1058,23 +1117,28 @@ def chatbot_message():
                     completed_courses = sum(1 for progress in course_progress if progress['progress'] >= 100)
                     active_courses = sum(1 for progress in course_progress if 0 < progress['progress'] < 100)
 
-                    # Calculate learning momentum (recent activity)
-                    now = datetime.utcnow()
-                    recent_activity_count = 0
+                    # Build enrollment list
+                    enrollment_list = []
                     for enrollment in enrollments:
-                        last_accessed = enrollment.get('lastAccessed')
-                        if last_accessed:
-                            try:
-                                if isinstance(last_accessed, str):
-                                    last_date = datetime.fromisoformat(last_accessed.replace('Z', '+00:00'))
-                                else:
-                                    last_date = last_accessed
-                                days_diff = (now - last_date.replace(tzinfo=None)).days
-                                if days_diff <= 7:
-                                    recent_activity_count += 1
-                            except:
-                                continue
+                        matched_progress = next(
+                            (cp for cp in course_progress if cp['courseId'] == enrollment['courseId']),
+                            None
+                        )
+                        
+                        course_obj = {
+                            'title': matched_progress.get('courseTitle', 'Unknown') if matched_progress else 'Unknown',
+                            'topics': matched_progress.get('topics', []) if matched_progress else []
+                        }
 
+                        enrollment_list.append({
+                            'courseId': enrollment.get('courseId'),
+                            'enrolledAt': enrollment.get('enrolledAt'),
+                            'progress': matched_progress['progress'] if matched_progress else 0,
+                            'lastAccessed': enrollment.get('lastAccessed'),
+                            'course': course_obj
+                        })
+
+                    # Build final user_context object
                     user_context = {
                         'user': {
                             'userId': user_id,
@@ -1089,19 +1153,9 @@ def chatbot_message():
                             'completedCourses': completed_courses,
                             'activeCourses': active_courses,
                             'courseProgress': course_progress,
-                            'completionRate': round((completed_courses / len(enrollments) * 100), 1) if enrollments else 0,
-                            'learningMomentum': round((recent_activity_count / max(len(enrollments), 1)), 2),
-                            'lastActivity': max([e.get('lastAccessed') for e in enrollments if e.get('lastAccessed')] or [None])
+                            'completionRate': round((completed_courses / len(enrollments) * 100), 1) if enrollments else 0
                         },
-                        'enrollments': [{
-                            'courseId': enrollment.get('courseId'),
-                            'enrolledAt': enrollment.get('enrolledAt'),
-                            'progress': next((p.get('progress', 0) for p in course_progress if p.get('courseId') == enrollment.get('courseId')), 0),
-                            'lastAccessed': enrollment.get('lastAccessed'),
-                            'course': next(({'title': cp.get('courseTitle'), 'topics': cp.get('topics', [])}
-                                           for cp in course_progress if cp.get('courseId') == enrollment.get('courseId')),
-                                           {'title': 'Unknown', 'topics': []})
-                        } for enrollment in enrollments] if enrollments else [],
+                        'enrollments': enrollment_list,
                         'recommendations': [{
                             'courseId': str(course['_id']),
                             'title': course.get('title'),
@@ -1112,45 +1166,62 @@ def chatbot_message():
                             'duration': course.get('duration', '4 weeks')
                         } for course in recommended_courses]
                     }
+
             except Exception as e:
                 print(f"Error getting user context: {e}")
+                import traceback
+                traceback.print_exc()
                 user_context = None
 
         # Use Gemini chatbot if available, otherwise fallback
         if chatbot:
-            response_data = chatbot.process_message(
-                message=message,
-                user_data=user_context,
-                user_id=user_id
-            )
-
-            # Save bot response to chat history
-            if chat_sessions_collection is not None:
-                chat_sessions_collection.update_one(
-                    {'sessionId': session_id},
-                    {
-                        '$push': {
-                            'messages': {
-                                'type': 'bot',
-                                'content': response_data.get('response', 'No response generated'),
-                                'timestamp': datetime.utcnow().isoformat(),
-                                'response_type': response_data.get('response_type', 'general'),
-                                'suggested_actions': response_data.get('suggested_actions', [])
-                            }
-                        }
-                    }
+            try:
+                response_data = chatbot.process_message(
+                    message=message,
+                    user_data=user_context,
+                    user_id=user_id
                 )
 
-            return jsonify({
-                'response': response_data.get('response', 'No response generated'),
-                'response_type': response_data.get('response_type', 'general'),
-                'suggested_actions': response_data.get('suggested_actions', []),
-                'context_used': response_data.get('context_used', False),
-                'user_context_summary': response_data.get('user_context_summary'),
-                'sessionId': session_id,
-                'userId': user_id,
-                'timestamp': datetime.now().isoformat()
-            })
+                # Save bot response to chat history
+                if chat_sessions_collection is not None:
+                    chat_sessions_collection.update_one(
+                        {'sessionId': session_id},
+                        {
+                            '$push': {
+                                'messages': {
+                                    'type': 'bot',
+                                    'content': response_data.get('response', 'No response generated'),
+                                    'timestamp': datetime.now(timezone.utc).isoformat(),
+                                    'response_type': response_data.get('response_type', 'general'),
+                                    'suggested_actions': response_data.get('suggested_actions', [])
+                                }
+                            }
+                        }
+                    )
+
+                return jsonify({
+                    'response': response_data.get('response', 'No response generated'),
+                    'response_type': response_data.get('response_type', 'general'),
+                    'suggested_actions': response_data.get('suggested_actions', []),
+                    'context_used': response_data.get('context_used', False),
+                    'user_context_summary': response_data.get('user_context_summary'),
+                    'sessionId': session_id,
+                    'userId': user_id,
+                    'timestamp': datetime.now().isoformat()
+                })
+            except Exception as e:
+                print(f"Error in chatbot processing: {e}")
+                import traceback
+                traceback.print_exc()
+                # Fallback response
+                return jsonify({
+                    'response': "I'm here to help track your learning progress! Currently, I can see you're enrolled in courses and making great progress. Keep up the good work!",
+                    'response_type': 'fallback',
+                    'context_used': False,
+                    'sessionId': session_id,
+                    'userId': user_id,
+                    'timestamp': datetime.now().isoformat()
+                })
 
         else:
             # Fallback to simple rule-based responses
@@ -1193,7 +1264,7 @@ def chatbot_message():
             return jsonify({
                 'response': response,
                 'response_type': 'fallback',
-                'context_used': False,
+                'context_used': user_context is not None,
                 'sessionId': session_id,
                 'userId': user_id,
                 'timestamp': datetime.now().isoformat(),
@@ -1202,6 +1273,8 @@ def chatbot_message():
 
     except Exception as e:
         print(f"Error in chatbot message handler: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({
             'response': 'I apologize, but I encountered an error processing your request. Please try again in a moment.',
             'error': str(e),

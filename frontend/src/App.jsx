@@ -12,6 +12,7 @@ import ChatBot from './components/ChatBot'
 import About from './pages/About'
 import Contact from './pages/Contact'
 import Footer from './pages/Footer'
+import ScrollToTop from './pages/ScrollToTop'
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || ''
 
@@ -28,6 +29,7 @@ function App() {
   return (
     <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
       <Router>
+        <ScrollToTop />
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route 
