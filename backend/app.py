@@ -5,6 +5,7 @@ from pymongo.errors import ServerSelectionTimeoutError, ConnectionFailure
 from bson import ObjectId
 from datetime import datetime, timezone
 import os
+from flask import send_from_directory
 from dotenv import load_dotenv
 import atexit
 import functools
@@ -151,6 +152,25 @@ def admin_required():
             return jsonify({'error': 'Admin access required'}), 403
         return decorated_function
     return decorator
+
+# -------------------------------------------------------
+# Serve React Frontend (works in local + Docker)
+# -------------------------------------------------------
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve_react(path):
+    # When running locally, user will run Vite, so skip serving React
+    if os.environ.get("FLASK_ENV") == "development":
+        return jsonify({"message": "Frontend is served by Vite in local mode"}), 200
+
+    # In Docker/VM production:
+    static_folder = os.path.join(app.root_path, "static")
+
+    if path != "" and os.path.exists(os.path.join(static_folder, path)):
+        return send_from_directory(static_folder, path)
+
+    # otherwise return index.html
+    return send_from_directory(static_folder, "index.html")
 
 # Courses endpoints
 @app.route('/api/courses', methods=['GET'])

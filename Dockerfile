@@ -1,7 +1,7 @@
 # ============================
 # 1) Build Frontend (Vite)
 # ============================
-FROM node:18 AS frontend-builder
+FROM node:20 AS frontend-builder
 
 WORKDIR /app/frontend
 
