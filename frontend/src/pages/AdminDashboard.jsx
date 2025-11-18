@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth, useUser } from '@clerk/clerk-react'
 import api, { adminApi } from '../services/api'
+import { getInitials } from '../utils/helpers'
 import './AdminDashboard.css'
 
 function AdminDashboard() {
@@ -73,10 +74,7 @@ function AdminDashboard() {
     navigate('/admin')
   }
 
-  const getInitials = (name) => {
-    return name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'AD'
-  }
-
+  
   if (loading) {
     return <div className="loading">Loading...</div>
   }

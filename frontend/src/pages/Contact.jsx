@@ -1,19 +1,14 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './Contact.css';
-import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/clerk-react";
 
 const Contact = () => {
-  const { user } = useUser();
-  const [isChatOpen, setIsChatOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     subject: '',
     message: ''
   });
-
-  const toggleChat = () => setIsChatOpen(!isChatOpen);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '@clerk/clerk-react'
-import axios from 'axios'
+import api, { adminApi } from '../services/api'
 import './StudentDetails.css'
 
 function StudentDetails() {
   const { studentId } = useParams()
   const navigate = useNavigate()
+  const { userId } = useAuth()
   const [student, setStudent] = useState(null)
   const [loading, setLoading] = useState(true)
 
@@ -16,7 +17,7 @@ function StudentDetails() {
 
   const fetchStudentDetails = async () => {
     try {
-      const response = await axios.get(`/api/admin/student/${studentId}`)
+      const response = await adminApi.getStudentDetails(studentId, userId)
       setStudent(response.data)
     } catch (error) {
       console.error('Error fetching student details:', error)
@@ -27,8 +28,13 @@ function StudentDetails() {
 
   const handleVerifyUpdate = async (updateId, comment) => {
     try {
-      await axios.put(`/api/study-updates/${updateId}/verify`, {
+      await api.put(`/api/study-updates/${updateId}/verify`, {
         adminComment: comment
+      }, {
+        headers: {
+          'X-Admin-Key': 'elevateu-admin-2024',
+          'X-User-ID': userId
+        }
       })
       fetchStudentDetails()
     } catch (error) {

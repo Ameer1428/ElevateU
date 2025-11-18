@@ -13,6 +13,7 @@ import About from './pages/About'
 import Contact from './pages/Contact'
 import Footer from './pages/Footer'
 import ScrollToTop from './pages/ScrollToTop'
+import AfterAuth from './pages/AfterAuth'
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || ''
 
@@ -39,7 +40,7 @@ function App() {
       <SignIn 
         routing="path" 
         path="/login"
-        forceRedirectUrl="/admin"
+        forceRedirectUrl="/after-auth"
       />
     </AuthLayout>
   }
@@ -57,6 +58,8 @@ function App() {
     </AuthLayout>
   }
 />
+
+          <Route path="/after-auth" element={<AfterAuth />} />
 
           <Route
             path="/dashboard"
