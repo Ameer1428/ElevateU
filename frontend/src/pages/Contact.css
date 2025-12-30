@@ -1,6 +1,9 @@
+/* IMPORT OPEN SANS FONT */
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap');
+
 /* GENERAL */
 body {
-  font-family: "Inter", sans-serif;
+  font-family: "Open Sans", sans-serif;   /* <-- Entire website uses Open Sans */
   color: #1a1a1a;
   background: #f8f9fb;
 }
@@ -116,6 +119,7 @@ body {
   margin-bottom: 14px;
   border-radius: 6px;
   border: 1px solid #cfd4dc;
+  font-family: "Open Sans", sans-serif; /* Ensure form text uses Open Sans */
 }
 
 .submit-btn {
@@ -126,6 +130,7 @@ body {
   border: none;
   border-radius: 8px;
   cursor: pointer;
+  font-family: "Open Sans", sans-serif;
 }
 
 /* FOOTER */
@@ -179,6 +184,7 @@ body {
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 6px;
+  font-family: "Open Sans", sans-serif;
 }
 
 .chatbot-input button {
@@ -188,4 +194,5 @@ body {
   color: white;
   border: none;
   border-radius: 6px;
+  font-family: "Open Sans", sans-serif;
 }

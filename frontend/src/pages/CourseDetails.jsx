@@ -108,30 +108,30 @@ function CourseDetails() {
       <header className="dashboard-header">
         <div className="header-left">
           <div className="logo" onClick={handleBack} style={{ cursor: 'pointer' }}>
-            <span className="logo-text">ElevateU</span>
+            <span className="logo-text" style={{color:"#00294B"}}>ElevateU</span>
           </div>
         </div>
         <div className="header-right">
           <div className="user-profile">
             <div className="user-avatar">{getInitials(user?.fullName)}</div>
             <div className="user-info">
-              <div className="user-name">{user?.fullName || 'User'}</div>
+              <div className="user-name" style={{color:"#00294B"}}>{user?.fullName || 'User'}</div>
               <div className="user-email">{user?.primaryEmailAddress?.emailAddress || ''}</div>
             </div>
           </div>
           <button className="logout-btn" onClick={handleBack}>
-            Back to Dashboard
+            <span style={{color:"#00294B"}}>Back to Dashboard</span>
           </button>
         </div>
       </header>
 
       <div className="course-content">
         <div className="course-hero">
-          <h1 className="course-title">{course?.title}</h1>
+          <h1 className="course-title" style={{color:"#00294B"}}>{course?.title}</h1>
           <p className="course-description">{course?.description}</p>
           <div className="course-meta">
             <span>⏱ {course?.duration || 'N/A'}</span>
-            <span>✓ {totalTopics} topics</span>
+            <span >✓ {totalTopics} topics</span>
           </div>
           {notEnrolled ? (
             <button className="btn-primary" onClick={handleEnroll}>
@@ -155,7 +155,7 @@ function CourseDetails() {
 
         {!notEnrolled && (
           <div className="topics-section">
-            <h2 className="section-title">Topics</h2>
+            <h2 className="section-title" style={{color:"#00294B"}}>Topics</h2>
             <div className="topics-list">
               {course?.topics?.map((topic, idx) => {
                 const isCompleted = completedTopics.includes(idx)

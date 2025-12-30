@@ -72,26 +72,26 @@ function BrowseCourses() {
       <header className="dashboard-header">
         <div className="header-left">
           <div className="logo" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
-            <span className="logo-text">ElevateU</span>
+            <span className="logo-text" style={{color:"#00294B"}}>ElevateU</span>
           </div>
         </div>
         <div className="header-right">
           <div className="user-profile">
             <div className="user-avatar">{getInitials(user?.fullName)}</div>
             <div className="user-info">
-              <div className="user-name">{user?.fullName || 'User'}</div>
+              <div className="user-name" style={{color:"#00294B"}}>{user?.fullName || 'User'}</div>
               <div className="user-email">{user?.primaryEmailAddress?.emailAddress || ''}</div>
             </div>
           </div>
           <button className="logout-btn" onClick={() => navigate('/dashboard')}>
-            Back to Dashboard
+            <span style={{color:"#00294B"}}>Back to Dashboard</span>
           </button>
         </div>
       </header>
 
       <div className="dashboard-content">
         <div className="welcome-section">
-          <h1 className="welcome-title">Welcome back, {user?.firstName || 'User'}! 👋</h1>
+          <h1 className="welcome-title"style={{color:"#00294B"}}>Welcome back, {user?.firstName || 'User'}! 👋</h1>
           <p className="welcome-subtitle">Continue your learning journey with AI-powered guidance</p>
         </div>
 
@@ -119,7 +119,7 @@ function BrowseCourses() {
                 
                 return (
                   <div key={course._id} className="course-card">
-                    <h3 className="course-title">{course.title}</h3>
+                    <h3 className="course-title" style={{color:"#00294B"}}>{course.title}</h3>
                     <p className="course-description">{course.description}</p>
                     <div className="course-details">
                       <p><strong>Instructor:</strong> {course.instructor || 'TBA'}</p>
@@ -130,6 +130,7 @@ function BrowseCourses() {
                       className="btn-enroll"
                       onClick={() => handleEnroll(course._id)}
                       disabled={isEnrolled}
+                      style={{backgroundColor:"#00294B"}}
                     >
                       {isEnrolled ? 'Already Enrolled' : 'Enroll Now'}
                     </button>

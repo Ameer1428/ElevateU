@@ -1,7 +1,10 @@
+/* IMPORT OPEN SANS FONT */
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap');
+
 /* GENERAL */
 body {
-  font-family: "Inter", sans-serif;
-  color: #1a1a1a;
+  font-family: "Open Sans", sans-serif;   /* <-- Open Sans applied globally */
+  color: #00294B;
   background: #f8f9fb;
 }
 

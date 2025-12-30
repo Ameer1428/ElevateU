@@ -40,7 +40,7 @@ function LandingPage() {
     <div className="landing-page">
           <header className="landing-header">
       <div className="logo">
-        <span className="logo-text">ElevateU</span>
+        <span className="logo-text" style={{color:"#00294B"}}>ElevateU</span>
       </div>
 
       {/* hide login/signup if user is signed in */}
@@ -62,8 +62,8 @@ function LandingPage() {
 
     <section className="hero-section">
       <h1 className="hero-title">
-        <span className="gradient-purple-blue">Transform Your Learning</span>
-        <span className="gradient-pink-purple"> Journey with AI</span>
+        <span className="gradient-purple-blue" style={{color:"#00294B"}}>Transform Your Learning</span>
+        <span className="gradient-pink-purple" style={{color:"#00294B"}}> Journey with AI</span>
       </h1>
 
       <p className="hero-description" style={{ fontSize: "15px" }}>
@@ -74,7 +74,7 @@ function LandingPage() {
       <div className="hero-buttons">
 
         {/* Main CTA — same for both states */}
-        <button className="btn-primary" onClick={handleStartLearning}>
+        <button className="btn-primary" style={{backgroundColor:"#00294B"}} onClick={handleStartLearning}>
           Start Learning
         </button>
 
@@ -88,33 +88,33 @@ function LandingPage() {
       </div>
     </section>
       <section className="features-section">
-        <h2 className="section-title" >Why To Choose ElevateU?</h2>
-        <p className="section-subtitle" style={{fontSize:"15px"}}>Powerful features designed for modern learners and educators.</p>
+        <h2 className="section-title" style={{color:"#00294B"}}>Why To Choose ElevateU?</h2>
+        <p className="section-subtitle">Powerful features designed for modern learners and educators.</p>
         <div className="features-grid">
           <div className="feature-card">
             <div className="feature-icon">📚</div>
-            <h3 className="feature-title">Comprehensive Courses</h3>
+            <h3 className="feature-title" style={{color:"#00294B"}}>Comprehensive Courses</h3>
             <p className="feature-description">
               Access a wide range of courses across multiple domains with structured learning paths.
             </p>
           </div>
           <div className="feature-card">
             <div className="feature-icon">🧠</div>
-            <h3 className="feature-title">AI-Powered Tutor</h3>
+            <h3 className="feature-title" style={{color:"#00294B"}}>AI-Powered Tutor</h3>
             <p className="feature-description">
               Get personalized study recommendations using RAG-based AI that understands your progress.
             </p>
           </div>
           <div className="feature-card">
             <div className="feature-icon">📈</div>
-            <h3 className="feature-title">Progress Tracking</h3>
+            <h3 className="feature-title" style={{color:"#00294B"}}>Progress Tracking</h3>
             <p className="feature-description">
               Monitor your learning journey with detailed analytics and progress visualization.
             </p>
           </div>
           <div className="feature-card">
             <div className="feature-icon">👥</div>
-            <h3 className="feature-title">Admin Dashboard</h3>
+            <h3 className="feature-title" style={{color:"#00294B"}}>Admin Dashboard</h3>
             <p className="feature-description">
               Comprehensive tools for course management and student progress monitoring.
             </p>

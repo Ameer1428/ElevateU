@@ -25,7 +25,7 @@ const Contact = () => {
       <header className="header">
         <div className="container header-bar">
           <div className="logo">
-            <Link to="/"><h2>ElevateU</h2></Link>
+            <Link to="/"><h2 style={{color:"#00294b"}}>ElevateU</h2></Link>
           </div>
         </div>
       </header>
@@ -33,7 +33,7 @@ const Contact = () => {
       <section className="contact-hero">
         <div className="container">
           <div className="hero-content">
-            <h1>Get In Touch</h1>
+            <h1 style={{color:"#00294b"}}>Get In Touch</h1>
             <p>We’d love to hear from you. Send us a message and we will reply soon.</p>
           </div>
         </div>
@@ -43,12 +43,12 @@ const Contact = () => {
         <div className="container contact-grid">
           
           <div className="contact-info">
-            <h2>Contact Information</h2>
+            <h2 style={{color:"#00294b"}}>Contact Information</h2>
 
             <div className="contact-item">
               <div className="contact-icon">📧</div>
               <div>
-                <h3>Email</h3>
+                <h3 style={{color:"#00294b"}}>Email</h3>
                 <p>support@elevateu.com</p>
               </div>
             </div>
@@ -56,7 +56,7 @@ const Contact = () => {
             <div className="contact-item">
               <div className="contact-icon">📞</div>
               <div>
-                <h3>Phone</h3>
+                <h3 style={{color:"#00294b"}}>Phone</h3>
                 <p>+1 (555) 123-4567</p>
               </div>
             </div>
@@ -64,7 +64,7 @@ const Contact = () => {
             <div className="contact-item">
               <div className="contact-icon">📍</div>
               <div>
-                <h3>Address</h3>
+                <h3 style={{color:"#00294b"}}>Address</h3>
                 <p>123 Education Street<br />Learning City, LC 12345</p>
               </div>
             </div>
@@ -72,14 +72,14 @@ const Contact = () => {
             <div className="contact-item">
               <div className="contact-icon">🕒</div>
               <div>
-                <h3>Business Hours</h3>
+                <h3 style={{color:"#00294b"}}>Business Hours</h3>
                 <p>Mon–Fri: 9 AM – 6 PM<br />Sat: 10 AM – 4 PM</p>
               </div>
             </div>
           </div>
 
           <div className="contact-form-container">
-            <h2>Send Us a Message</h2>
+            <h2 style={{color:"#00294b"}}>Send Us a Message</h2>
 
             <form className="contact-form" onSubmit={handleSubmit}>
               <input
@@ -118,7 +118,7 @@ const Contact = () => {
                 required
               ></textarea>
 
-              <button type="submit" className="submit-btn">Send Message</button>
+              <button style={{backgroundColor:"#00294b"}} type="submit" className="submit-btn">Send Message</button>
             </form>
           </div>
         </div>

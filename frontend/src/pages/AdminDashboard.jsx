@@ -84,19 +84,19 @@ function AdminDashboard() {
       <header className="admin-header">
         <div className="header-left">
           <div className="logo" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
-            <span className="logo-text">Admin Dashboard</span>
+            <span className="logo-text" style={{color:"#00294b"}}>Admin Dashboard</span>
           </div>
         </div>
         <div className="header-right">
           <div className="admin-profile">
             <div className="admin-avatar">{getInitials(user?.fullName)}</div>
             <div className="admin-info">
-              <div className="admin-name">Admin User</div>
-              <div className="admin-role">Administrator</div>
+              <div className="admin-name" style={{color:"#00294b"}}>Admin User</div>
+              <div className="admin-role" style={{color:"#00294b"}}>Administrator</div>
             </div>
           </div>
           <button className="logout-btn" onClick={handleLogout}>
-            Logout →
+            <span style={{color:"#00294b"}}>Logout →</span>
           </button>
         </div>
       </header>
@@ -105,18 +105,18 @@ function AdminDashboard() {
         <div className="stats-grid">
           <div className="stat-card">
             <div className="stat-label">Total Courses</div>
-            <div className="stat-value">{stats.totalCourses || 0}</div>
+            <div className="stat-value" style={{color:"#00294b"}}>{stats.totalCourses || 0}</div>
           </div>
           <div className="stat-card">
-            <div className="stat-label">Active Students</div>
+            <div className="stat-label" style={{color:"#00294b"}}>Active Students</div>
             <div className="stat-value">{stats.activeStudents || 0}</div>
           </div>
           <div className="stat-card">
-            <div className="stat-label">Total Enrollments</div>
+            <div className="stat-label" style={{color:"#00294b"}}>Total Enrollments</div>
             <div className="stat-value">{stats.totalEnrollments || 0}</div>
           </div>
           <div className="stat-card">
-            <div className="stat-label">Avg. Completion</div>
+            <div className="stat-label" style={{color:"#00294b"}}>Avg. Completion</div>
             <div className="stat-value">{stats.avgCompletion || 0}%</div>
           </div>
         </div>
@@ -132,15 +132,15 @@ function AdminDashboard() {
             className={`tab ${activeTab === 'students' ? 'active' : ''}`}
             onClick={() => setActiveTab('students')}
           >
-            Student Monitoring
+            <span style={{color:"#00294b"}}>Student Monitoring</span>
           </button>
         </div>
 
         {activeTab === 'courses' && (
           <div className="courses-section">
             <div className="section-header">
-              <h2 className="section-title">Manage Courses</h2>
-              <button className="btn-add-course" onClick={() => setShowAddCourse(true)}>
+              <h2 className="section-title" style={{color:"#00294b"}}>Manage Courses</h2>
+              <button style={{backgroundColor:"#00294B"}} className="btn-add-course" onClick={() => setShowAddCourse(true)}>
                 + Add Course
               </button>
             </div>
@@ -172,7 +172,7 @@ function AdminDashboard() {
                       🗑️
                     </button>
                   </div>
-                  <h3 className="course-title">{course.title}</h3>
+                  <h3 className="course-title" style={{color:"#00294b"}}>{course.title}</h3>
                   <p className="course-description">{course.description}</p>
                   <div className="course-details">
                     <p><strong>Instructor:</strong> {course.instructor || 'TBA'}</p>
@@ -188,7 +188,7 @@ function AdminDashboard() {
 
         {activeTab === 'students' && (
           <div className="students-section">
-            <h2 className="section-title">Student Progress Monitoring</h2>
+            <h2 className="section-title" style={{color:"#00294b"}}>Student Progress Monitoring</h2>
             <div className="students-list">
               {students.map((student) => (
                 <div key={student._id} className="student-card">
@@ -196,7 +196,7 @@ function AdminDashboard() {
                     <div className="student-info">
                       <div className="student-avatar">{student.name?.substring(0, 2).toUpperCase() || 'U'}</div>
                       <div>
-                        <div className="student-name">{student.name}</div>
+                        <div className="student-name" style={{color:"#00294b"}}>{student.name}</div>
                         <div className="student-email">{student.email}</div>
                       </div>
                     </div>

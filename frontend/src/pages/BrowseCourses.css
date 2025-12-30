@@ -1,3 +1,14 @@
+/* IMPORT OPEN SANS FONT */
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap');
+
+/* APPLY OPEN SANS GLOBALLY */
+html, body {
+  font-family: "Open Sans", sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* BROWSE COURSES PAGE */
 .browse-courses {
   min-height: 100vh;
   background: linear-gradient(135deg, #ffffff 0%, #f0f4ff 100%);
@@ -234,4 +245,3 @@
     grid-template-columns: 1fr;
   }
 }
-

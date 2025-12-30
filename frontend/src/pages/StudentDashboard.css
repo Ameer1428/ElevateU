@@ -1,3 +1,22 @@
+/* IMPORT OPEN SANS FONT */
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap');
+
+/* GLOBAL FONT — SAFE, WILL NOT BREAK ICONS */
+html, body {
+  font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ensure text elements follow Open Sans */
+button, input, textarea, select, a, h1, h2, h3, h4, h5, h6 {
+  font-family: inherit;
+}
+
+/* YOUR ORIGINAL CSS — UNMODIFIED BELOW */
+
 .student-dashboard {
   min-height: 100vh;
   background: linear-gradient(135deg, #ffffff 0%, #f0f4ff 100%);
@@ -283,7 +302,7 @@
 
 .courses-section {
   flex: 1;
-  min-width: 0; /* Allow flex item to shrink */
+  min-width: 0;
 }
 
 .chatbot-section {
@@ -322,4 +341,3 @@
     order: 1;
   }
 }
-

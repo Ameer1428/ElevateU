@@ -78,7 +78,7 @@ function StudentDashboard() {
         <header className="dashboard-header">
           <div className="header-left">
             <div className="logo" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
-              <span className="logo-text">ElevateU</span>
+              <span className="logo-text" style={{color:"#00294B"}}>ElevateU</span>
             </div>
           </div>
           <div className="header-right">
@@ -109,26 +109,26 @@ function StudentDashboard() {
       <header className="dashboard-header">
         <div className="header-left">
           <div className="logo" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
-            <span className="logo-text">ElevateU</span>
+            <span className="logo-text" style={{color:"#00294B"}}>ElevateU</span>
           </div>
         </div>
         <div className="header-right">
           <div className="user-profile">
             <div className="user-avatar">{getInitials(user?.fullName)}</div>
             <div className="user-info">
-              <div className="user-name">{user?.fullName || 'User'}</div>
+              <div className="user-name" style={{color:"#00294B"}}>{user?.fullName || 'User'}</div>
               <div className="user-email">{user?.primaryEmailAddress?.emailAddress || ''}</div>
             </div>
           </div>
           <button className="logout-btn" onClick={handleLogout}>
-            Logout →
+            <span style={{color:"#00294B"}}>Logout →</span>
           </button>
         </div>
       </header>
 
       <div className="dashboard-content">
         <div className="welcome-section">
-          <h1 className="welcome-title">Welcome back, {user?.firstName || 'User'}! 👋</h1>
+          <h1 className="welcome-title" style={{color:"#00294B"}}>Welcome back, {user?.firstName || 'User'}! 👋</h1>
           <p className="welcome-subtitle">Continue your learning journey with AI-powered guidance</p>
         </div>
 
@@ -137,7 +137,7 @@ function StudentDashboard() {
             className={`tab ${activeTab === 'my-courses' ? 'active' : ''}`}
             onClick={() => setActiveTab('my-courses')}
           >
-            My Courses
+            <span style={{color:"#00294b"}}>My Courses</span>
           </button>
           <button style={{marginTop:"20px"}}
             className={`tab ${activeTab === 'browse' ? 'active' : ''}`}
@@ -146,7 +146,7 @@ function StudentDashboard() {
               navigate('/browse')
             }}
           >
-            Browse Courses
+            <span style={{color:"#00294b"}}>Browse Courses</span>
           </button>
         </div>
 
@@ -156,7 +156,7 @@ function StudentDashboard() {
               <div className="empty-state">
                 <p>You haven't enrolled in any courses yet.</p>
                 <button className="btn-primary" onClick={() => navigate('/browse')}>
-                  Browse Courses
+                  <span style={{color:"#00294b"}}>Browse Courses</span>
                 </button>
               </div>
             ) : (
@@ -171,7 +171,7 @@ function StudentDashboard() {
                   return (
                     <div key={enrollment._id} className="course-card">
                       <div className="course-status">In Progress</div>
-                      <h3 className="course-title">{course?.title}</h3>
+                      <h3 className="course-title" style={{color:"#00294B"}}>{course?.title}</h3>
                       <p className="course-description">{course?.description}</p>
                       <div className="course-meta">
                         <span>⏱ {course?.duration || 'N/A'}</span>
@@ -190,7 +190,7 @@ function StudentDashboard() {
                         <span className="progress-text">{Math.round(progressPercent)}% Complete</span>
                       </div>
                       <div className="course-actions">
-                        <button
+                        <button style={{backgroundColor:"#00294B"}}
                           className="btn-ai-tutor"
                           onClick={() => handleAITutor(course?._id)}
                         >
