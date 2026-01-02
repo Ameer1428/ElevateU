@@ -172,8 +172,8 @@ def serve_react(path):
     # In Docker/VM production:
     static_folder = os.path.join(app.root_path, "static")
 
-    if path != "" and os.path.exists(os.path.join(static_folder, path)):
-        return send_from_directory(static_folder, path)
+    if path != "" and os.path.exists(os.path.join('static', path)):
+        return send_from_directory('static', path)
 
     # otherwise return index.html
     return send_from_directory(static_folder, "index.html")
@@ -1273,5 +1273,6 @@ def get_user_sessions(user_id):
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", debug=True, port=5000, threaded=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", debug=True, port=port, threaded=True)
 
