@@ -21,7 +21,12 @@ except ImportError as e:
 
 load_dotenv()
 
-app = Flask(__name__)
+app = Flask(
+    __name__,
+    static_folder="static",
+    static_url_path="/",
+    template_folder="static"
+)
 CORS(app)
 
 # MongoDB connection with connection pooling and error handling
@@ -162,21 +167,14 @@ def admin_required():
 # -------------------------------------------------------
 # Serve React Frontend (works in local + Docker)
 # -------------------------------------------------------
-@app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
+@app.route("/", defaults={"path": ""})
+@app.route("/<path:path>")
 def serve_react(path):
-    # When running locally, user will run Vite, so skip serving React
-    if os.environ.get("FLASK_ENV") == "development":
-        return jsonify({"message": "Frontend is served by Vite in local mode"}), 200
+    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
+        return send_from_directory(app.static_folder, path)
 
-    # In Docker/VM production:
-    static_folder = os.path.join(app.root_path, "static")
+    return send_from_directory(app.static_folder, "index.html")
 
-    if path != "" and os.path.exists(os.path.join('static', path)):
-        return send_from_directory('static', path)
-
-    # otherwise return index.html
-    return send_from_directory(static_folder, "index.html")
 
 # Courses endpoints
 @app.route('/api/courses', methods=['GET'])
@@ -1273,6 +1271,6 @@ def get_user_sessions(user_id):
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.environ.get("PORT", 8000))
     app.run(host="0.0.0.0", debug=True, port=port, threaded=True)
 
