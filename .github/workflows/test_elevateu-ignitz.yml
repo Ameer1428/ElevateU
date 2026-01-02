@@ -73,5 +73,7 @@ jobs:
         with:
           app-name: 'ElevateU-Ignitz'
           slot-name: 'Production'
+          package: backend
 
           
+
